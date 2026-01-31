@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valentine's Inquiry</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #ffebee;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #heartCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .container {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            z-index: 5;
+            max-width: 90%;
+        }
+
+        h1 {
+            color: #d32f2f;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: bold;
+        }
+
+        #yesBtn { background-color: #4caf50; color: white; }
+        #noBtn { background-color: #f44336; color: white; position: relative; }
+
+        .celebration {
+            display: none;
+            text-align: center;
+            z-index: 5;
+        }
+
+        .celebration h2 {
+            font-size: 3rem;
+            color: #d32f2f;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="heartCanvas"></canvas>
+
+    <div class="container" id="mainContainer">
+        <h1 id="question">Will you be my Valentine? ❤️</h1>
+        <div class="buttons" id="btnGroup">
+            <button id="yesBtn">Yes</button>
+            <button id="noBtn">No</button>
+        </div>
+    </div>
+
+    <div class="celebration" id="happyMsg">
+        <h2>YAY! ❤️🌹</h2>
+        <p style="font-size: 1.5rem; color: #b71c1c;">I knew you'd say yes!</p>
+    </div>
+
+    <script>
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+        const question = document.getElementById('question');
+        const mainContainer = document.getElementById('mainContainer');
+        const happyMsg = document.getElementById('happyMsg');
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let noCount = 0;
+        const messages = [
+            "Are you sure? 🥺",
+            "Think about it again... 💭",
+            "I'll be very sad... 😭",
+            "I'll buy you favorite treats! 🍫",
+            "Please please please? 🎀",
+            "You're breaking my heart!💔",
+            "Look at this face: 🥺👉👈"
+        ];
+
+        // "No" Button Logic
+        noBtn.addEventListener('mouseover', moveButton); // Moves when they try to hover
+        noBtn.addEventListener('click', moveButton); // Moves if they manage to click
+
+        function moveButton() {
+            question.innerText = messages[Math.min(noCount, messages.length - 1)];
+            noCount++;
+
+            // Make Yes bigger
+            const currentSize = parseFloat(window.getComputedStyle(yesBtn).fontSize);
+            yesBtn.style.fontSize = (currentSize + 10) + 'px';
+            yesBtn.style.padding = (currentSize * 0.8) + 'px ' + (currentSize * 1.5) + 'px';
+
+            // Teleport No
+            const x = Math.random() * (window.innerWidth - noBtn.offsetWidth);
+            const y = Math.random() * (window.innerHeight - noBtn.offsetHeight);
+            noBtn.style.position = 'absolute';
+            noBtn.style.left = x + 'px';
+            noBtn.style.top = y + 'px';
+        }
+
+        // "Yes" Button Logic
+        yesBtn.addEventListener('click', () => {
+            mainContainer.style.display = 'none';
+            happyMsg.style.display = 'block';
+            document.body.style.backgroundColor = '#ffcdd2';
+            startHearts();
+        });
+
+        // Heart Animation Logic
+        let hearts = [];
+        function startHearts() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            for (let i = 0; i < 100; i++) {
+                hearts.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 20 + 10,
+                    speed: Math.random() * 3 + 2,
+                    opacity: Math.random()
+                });
+            }
+            animate();
+        }
+
+        function drawHeart(x, y, size, opacity) {
+            ctx.fillStyle = `rgba(211, 47, 47, ${opacity})`;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.bezierCurveTo(x, y - 3, x - 5, y - 15, x - size, y - 15);
+            ctx.bezierCurveTo(x - size * 2, y - 15, x - size * 2, y + size / 2, x - size * 2, y + size / 2);
+            ctx.bezierCurveTo(x - size * 2, y + size, x - size, y + size * 1.5, x, y + size * 2.1);
+            ctx.bezierCurveTo(x + size, y + size * 1.5, x + size * 2, y + size, x + size * 2, y + size / 2);
+            ctx.bezierCurveTo(x + size * 2, y + size / 2, x + size * 2, y - 15, x + size, y - 15);
+            ctx.bezierCurveTo(x + 5, y - 15, x, y - 3, x, y);
+            ctx.fill();
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            hearts.forEach(h => {
+                h.y += h.speed;
+                if (h.y > canvas.height) h.y = -20;
+                drawHeart(h.x, h.y, h.size / 2, h.opacity);
+            });
+            requestAnimationFrame(animate);
+        }
+    </script>
+</body>
+</html>
